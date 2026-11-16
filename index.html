@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS | Personal AI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:#e9f6ff;font-family:Arial,sans-serif;min-height:100vh}
+header{text-align:center;padding:25px 15px}
+h1{letter-spacing:7px;color:#63dfff;margin-bottom:5px}
+.sub{color:#7897aa;font-size:12px;letter-spacing:3px}
+main{max-width:650px;margin:auto;padding:15px}
+.orb{width:145px;height:145px;border-radius:50%;margin:25px auto;
+background:radial-gradient(circle,#b8f6ff 0%,#36c9f2 15%,#0874a5 42%,#07111f 72%);
+box-shadow:0 0 30px #17bce9,0 0 70px #0874a566;animation:pulse 3s infinite}
+@keyframes pulse{50%{transform:scale(1.06);box-shadow:0 0 55px #17bce9}}
+#status{text-align:center;color:#63dfff;font-size:13px;margin:20px}
+.panel{background:#101f30;border:1px solid #1d4056;border-radius:15px;padding:15px;margin-top:20px}
+#chat{height:230px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.message{padding:11px 13px;border-radius:12px;max-width:90%;line-height:1.5;font-size:14px}
+.bot{background:#18354a;align-self:flex-start}
+.user{background:#075b80;align-self:flex-end}
+.controls{display:flex;gap:8px;margin-top:12px}
+input{min-width:0;flex:1;background:#071522;color:white;border:1px solid #31546a;border-radius:10px;padding:13px;font-size:15px}
+button{border:0;border-radius:10px;background:#087eaa;color:white;padding:12px;font-weight:bold}
+button:active{opacity:.7}
+.actions{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.actions button{background:#153b50;border:1px solid #26718e}
+small{display:block;text-align:center;color:#7897aa;margin-top:22px}
+</style>
+</head>
+<body>
+<header>
+<h1>J.A.R.V.I.S</h1>
+<div class="sub">PERSONAL INTELLIGENCE SYSTEM</div>
+</header>
+<main>
+<div class="orb"></div>
+<div id="status">SYSTEM ONLINE · BASIC MODE</div>
+<div class="panel">
+<div id="chat">
+<div class="message bot">Hello. I am Jarvis, your personal assistant. My interface is online. What would you like to work on today?</div>
+</div>
+<div class="controls">
+<input id="message" placeholder="Talk to Jarvis..." autocomplete="off">
+<button onclick="sendMessage()">SEND</button>
+</div>
+<div class="actions">
+<button onclick="startVoice()">🎙 Speak</button>
+<button onclick="speakLast()">🔊 Speak response</button>
+</div>
+</div>
+<small>JARVIS PERSONAL ASSISTANT · VERSION 1.0</small>
+</main>
+<script>
+let lastReply="Hello. I am Jarvis, your personal assistant.";
+function addMessage(text,type){
+const chat=document.getElementById("chat");
+const div=document.createElement("div");
+div.className="message "+type;
+div.textContent=text;
+chat.appendChild(div);
+chat.scrollTop=chat.scrollHeight;
+}
+function replyTo(text){
+const q=text.toLowerCase();
+if(q.includes("hello")||q.includes("hi"))return "Hello. I am online and ready to assist you.";
+if(q.includes("name"))return "I am Jarvis, your personal AI assistant.";
+if(q.includes("real estate")||q.includes("lux terra"))return "Let's work on building your real estate business. We can plan property listings, client relationships and business growth.";
+if(q.includes("forex"))return "I can help you learn Forex step by step. Remember: protect your capital and practise on a demo account before risking money.";
+if(q.includes("invest"))return "Let's approach investing carefully. We should examine the business, its risks, valuation and your investment time horizon.";
+if(q.includes("study"))return "Let's organise your studies. Tell me the subject and topic you want to understand.";
+if(q.includes("help"))return "I can help with learning, business planning, productivity and research. My real AI connection is the next development stage.";
+if(q.includes("time"))return "I do not have a live clock connection yet. We will add that later.";
+return "I have received your message. My basic interface is working, but I need an AI brain connected before I can answer that intelligently.";
+}
+function sendMessage(){
+const input=document.getElementById("message");
+const text=input.value.trim();
+if(!text)return;
+addMessage(text,"user");
+input.value="";
+lastReply=replyTo(text);
+addMessage(lastReply,"bot");
+}
+document.getElementById("message").addEventListener("keydown",e=>{
+if(e.key==="Enter")sendMessage();
+});
+function speakLast(){
+if(!("speechSynthesis" in window)){alert("Speech is not supported in this browser.");return;}
+speechSynthesis.cancel();
+const speech=new SpeechSynthesisUtterance(lastReply);
+speech.lang="en-US";
+speech.rate=0.95;
+const voices=speechSynthesis.getVoices();
+const female=voices.find(v=>/female|samantha|zira|ava/i.test(v.name));
+if(female)speech.voice=female;
+speechSynthesis.speak(speech);
+}
+function startVoice(){
+const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!Recognition){alert("Voice recognition is not supported in this browser. You can type messages for now.");return;}
+const recognition=new Recognition();
+recognition.lang="en-US";
+recognition.onresult=e=>{
+document.getElementById("message").value=e.results[0][0].transcript;
+sendMessage();
+};
+recognition.onerror=()=>alert("Voice recognition did not work. Please try typing.");
+recognition.start();
+}
+</script>
+</body>
+</html>
