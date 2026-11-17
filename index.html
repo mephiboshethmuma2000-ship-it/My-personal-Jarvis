@@ -76,41 +76,43 @@ if(q.includes("help"))return "I can help with learning, business planning, produ
 if(q.includes("time"))return "I do not have a live clock connection yet. We will add that later.";
 return "I have received your message. My basic interface is working, but I need an AI brain connected before I can answer that intelligently.";
 }
-function sendMessage(){
-const input=document.getElementById("message");
-const text=input.value.trim();
-if(!text)return;
-addMessage(text,"user");
-input.value="";
-lastReply=replyTo(text);
-addMessage(lastReply,"bot");
+async function sendMessage(){
+  const input = document.getElementById("message");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  addMessage(text, "user");
+  input.value = "";
+
+  const status = document.getElementById("status");
+  status.textContent = "JARVIS IS THINKING...";
+
+  try {
+    const response = await fetch(
+      "https://jarvis-brain.mephiboshethmuma2000.workers.dev",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: text })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error("AI connection failed");
+    }
+
+    lastReply = data.reply;
+    addMessage(lastReply, "bot");
+    status.textContent = "SYSTEM ONLINE · GEMINI CONNECTED";
+
+  } catch (error) {
+    lastReply = "I could not connect to my AI brain. Please try again.";
+    addMessage(lastReply, "bot");
+    status.textContent = "CONNECTION ERROR";
+  }
 }
-document.getElementById("message").addEventListener("keydown",e=>{
-if(e.key==="Enter")sendMessage();
-});
-function speakLast(){
-if(!("speechSynthesis" in window)){alert("Speech is not supported in this browser.");return;}
-speechSynthesis.cancel();
-const speech=new SpeechSynthesisUtterance(lastReply);
-speech.lang="en-US";
-speech.rate=0.95;
-const voices=speechSynthesis.getVoices();
-const female=voices.find(v=>/female|samantha|zira|ava/i.test(v.name));
-if(female)speech.voice=female;
-speechSynthesis.speak(speech);
-}
-function startVoice(){
-const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(!Recognition){alert("Voice recognition is not supported in this browser. You can type messages for now.");return;}
-const recognition=new Recognition();
-recognition.lang="en-US";
-recognition.onresult=e=>{
-document.getElementById("message").value=e.results[0][0].transcript;
-sendMessage();
-};
-recognition.onerror=()=>alert("Voice recognition did not work. Please try typing.");
-recognition.start();
-}
-</script>
-</body>
-</html>
